@@ -8,14 +8,39 @@ interface CounterProps {
 }
 
 const Counter: React.FC<CounterProps> = ({ initialCount }) => {
+  // Add Keyboard interactions - arrow keys and plus/minus keys should control the counter
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case "ArrowUp":
+      case "+":
+        increment();
+        break;
+      case "ArrowDown":
+      case "-":
+        decrement();
+        break;
+      default:
+        break;
+    }
+  };
+
   const { count, increment, decrement } = useCounter(initialCount);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [increment, decrement]);
 
   // Log analytics after state changes to ensure we capture the committed value
   const prevCountRef = useRef(count);
   useEffect(() => {
     const prev = prevCountRef.current;
     if (prev !== count) {
-      const eventName = count > prev ? "counter_increment" : "counter_decrement";
+      const eventName =
+        count > prev ? "counter_increment" : "counter_decrement";
       analyticsService.logEvent(eventName, { from: prev, to: count });
       prevCountRef.current = count;
     }

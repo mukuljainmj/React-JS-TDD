@@ -59,4 +59,27 @@ describe("Counter", () => {
     fireEvent.click(decrementButton);
     expect(countDisplay).toHaveTextContent("0");
   });
+
+  // test keyboard interactions - arrow keys and plus/minus keys should control the counter
+  test("handles keyboard interactions for increment and decrement", () => {
+    render(<Counter initialCount={0} />);
+
+    const countDisplay = screen.getByTestId("count-value");
+
+    // Simulate ArrowUp key press for increment
+    fireEvent.keyDown(window, { key: "ArrowUp", code: "ArrowUp" });
+    expect(countDisplay).toHaveTextContent("1");
+
+    // Simulate ArrowDown key press for decrement
+    fireEvent.keyDown(window, { key: "ArrowDown", code: "ArrowDown" });
+    expect(countDisplay).toHaveTextContent("0");
+
+    // Simulate '+' key press for increment
+    fireEvent.keyDown(window, { key: "+", code: "Equal" });
+    expect(countDisplay).toHaveTextContent("1");
+
+    // Simulate '-' key press for decrement
+    fireEvent.keyDown(window, { key: "-", code: "Minus" });
+    expect(countDisplay).toHaveTextContent("0");
+  });
 });
