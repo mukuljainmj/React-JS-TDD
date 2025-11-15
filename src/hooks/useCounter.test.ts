@@ -1,9 +1,48 @@
 import { renderHook, act } from "@testing-library/react";
+import { vi } from "vitest";
 import useCounter from "./useCounter";
+
+// In-memory localStorage mock to avoid touching real storage
+const createLocalStorageMock = () => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => (key in store ? store[key] : null)),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = String(value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+    key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
+    get length() {
+      return Object.keys(store).length;
+    },
+  } as unknown as Storage;
+};
+
+const originalLocalStorage = window.localStorage;
+const mockLocalStorage = createLocalStorageMock();
+
+beforeAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    value: mockLocalStorage,
+    configurable: true,
+  });
+});
+
+afterAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    value: originalLocalStorage,
+  });
+});
 
 describe("useCounter", () => {
   beforeEach(() => {
-    window.localStorage.clear();
+    mockLocalStorage.clear();
+    vi.clearAllMocks();
   });
 
   // Test that the useCounter hook starts with the initial value and provides increment and decrement functionality
